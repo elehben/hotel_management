@@ -1,0 +1,52 @@
+erDiagram
+    Guests {
+        INT guest_id PK
+        VARCHAR full_name
+        VARCHAR email
+        VARCHAR phone_number
+        VARCHAR identity_number
+        TIMESTAMP created_at
+    }
+
+    Rooms {
+        INT room_id PK
+        VARCHAR room_number
+        VARCHAR room_type_name
+        DECIMAL base_price
+        INT max_occupancy
+        VARCHAR status
+    }
+
+    Reservations {
+        INT reservation_id PK
+        INT guest_id FK
+        INT room_id FK
+        DATE check_in_date
+        DATE check_out_date
+        DECIMAL total_room_cost
+        VARCHAR status
+    }
+    
+    Services {
+        INT service_id PK
+        VARCHAR service_name
+        TEXT description
+        DECIMAL price
+        VARCHAR category
+        BOOLEAN is_available
+    }
+
+    Guest_Charges {
+        INT charge_id PK
+        INT reservation_id FK
+        INT service_id FK
+        INT quantity
+        TIMESTAMP charge_timestamp
+        DECIMAL amount_charged
+    }
+
+    Guests ||--o{ Reservations : "membuat"
+    Rooms ||--o{ Reservations : "dipesan pada"
+    
+    Reservations ||--o{ Guest_Charges : "memiliki tagihan"
+    Services ||--o{ Guest_Charges : "termasuk"
