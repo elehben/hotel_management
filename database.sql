@@ -20,6 +20,7 @@ CREATE TABLE `Guests` (
   `full_name` VARCHAR(100) NOT NULL,
   `email` VARCHAR(100) NOT NULL UNIQUE,
   `phone_number` VARCHAR(20) NOT NULL UNIQUE,
+  `password` CHAR(40) NOT NULL, -- Kolom Password ditambahkan
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -98,10 +99,11 @@ CREATE TABLE `Guest_Charges` (
 -- --------------------------------------------------------
 
 -- 1. Data Guests
-INSERT INTO `Guests` (`full_name`, `email`, `phone_number`, `guest_id`) VALUES
-('Ahmad Subagja', 'ahmad.s@example.com', '081234567890', '3201112223330001'),
-('Bunga Citra', 'bunga.citra@example.com', '081298765432', '3201445566770002'),
-('Charles Darmawan', 'charles.d@example.com', '081511223344', '3201778899000003');
+INSERT INTO `Guests` (`full_name`, `email`, `phone_number`, `guest_id`, `password`) VALUES
+('Administrator', 'admin@example.com', '000000000000', '0000000000000001', SHA('123')),
+('Ahmad Subagja', 'ahmad@example.com', '081234567890', '3201112223330001', SHA('111')),
+('Bunga Citra', 'bunga@example.com', '081298765432', '3201445566770002', SHA('222')),
+('Charles Darmawan', 'charles@example.com', '081511223344', '3201778899000003', SHA('333'));
 
 -- 2. Data Rooms
 INSERT INTO `Rooms` (`room_id`, `room_type_name`, `base_price`, `max_occupancy`, `status`) VALUES
