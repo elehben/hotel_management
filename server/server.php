@@ -90,8 +90,7 @@ elseif ($_SERVER['REQUEST_METHOD']=='POST')
 
         $aksi = $data->aksi;
 
-        if ($aksi == 'tambah')
-        { 
+        if ($aksi == 'tambah'){ 
             $input_data = array(
                 // reservation_id DIBUANG, karena generate otomatis di database.php
                 'guest_id'       => $data->guest_id,
@@ -107,8 +106,7 @@ elseif ($_SERVER['REQUEST_METHOD']=='POST')
             $abc->tambah_reservasi($input_data, $services);
             $pesan = "Reservasi berhasil disimpan";
 
-        } elseif ($aksi == 'ubah') 
-        { 
+        } elseif ($aksi == 'ubah') { 
             $input_data = array(
                 'reservation_id' => $data->reservation_id, // ID diperlukan untuk WHERE
                 'room_id'        => $data->room_id,
@@ -121,8 +119,7 @@ elseif ($_SERVER['REQUEST_METHOD']=='POST')
             $abc->ubah_reservasi($input_data, $services);
             $pesan = "Reservasi berhasil diperbarui";
         } 
-        elseif ($aksi == 'hapus') 
-        { 
+        elseif ($aksi == 'hapus') { 
             $abc->hapus_reservasi($data->reservation_id);
             $pesan = "Data reservasi dihapus";
         }
@@ -170,6 +167,21 @@ elseif ($_SERVER['REQUEST_METHOD']=='POST')
             $pesan = "Status pembayaran diperbarui menjadi " . $data->status_baru;
         }
         
+        // --- MANIPULASI USER ---
+        elseif ($aksi == 'tambah_user') {
+            $abc->tambah_user((array)$data);
+            $pesan = "User baru berhasil ditambahkan";
+        } 
+        elseif ($aksi == 'hapus_user') {
+            $result = $abc->hapus_user($data->user_id);
+            if($result) {
+                $pesan = "User berhasil dihapus";
+            } else {
+                http_response_code(400); // Bad Request
+                $pesan = "Gagal: Akun Super Admin tidak boleh dihapus!";
+            }
+        }
+
         http_response_code(200); 
         echo json_encode(array("pesan" => $pesan));
     
@@ -191,8 +203,7 @@ elseif ($_SERVER['REQUEST_METHOD']=='GET')
         JWT::decode($jwt, $key, array('HS256')); 
           
         // 1. TAMPIL SATU DATA (Untuk Edit)
-        if ($aksi == 'detail' && isset($_GET['id']))
-        { 
+        if ($aksi == 'detail' && isset($_GET['id'])){ 
             $id = $abc->filter($_GET['id']);  
             $reservasi = $abc->get_reservasi_by_id($id);
             $selected_services = $abc->get_selected_services($id);
@@ -204,8 +215,7 @@ elseif ($_SERVER['REQUEST_METHOD']=='GET')
         }
         
         // 2. TAMPIL SEMUA DATA TRANSAKSI (Dashboard Utama)
-        elseif ($aksi == 'tampil_transaksi') 
-        { 
+        elseif ($aksi == 'tampil_transaksi') { 
             $data = $abc->tampil_transaksi_tamu();
         }
 
@@ -231,22 +241,24 @@ elseif ($_SERVER['REQUEST_METHOD']=='GET')
         }
 
         // 3. DATA PENDUKUNG: List Kamar (Dropdown)
-        elseif ($aksi == 'list_kamar') 
-        { 
+        elseif ($aksi == 'list_kamar') { 
             $data = $abc->get_rooms_list();
         }
 
         // 4. DATA PENDUKUNG: List Service (Checkbox/Dropdown)
-        elseif ($aksi == 'list_service') 
-        { 
+        elseif ($aksi == 'list_service') { 
             $data = $abc->get_services_list();
         }
 
         // 5. DATA PENDUKUNG: List Tamu (Dropdown saat Tambah Reservasi)
         // Fitur baru untuk memilih tamu
-        elseif ($aksi == 'list_tamu') 
-        { 
+        elseif ($aksi == 'list_tamu') { 
             $data = $abc->get_guests_list();
+        }
+
+        // --- DATA USER ---
+        elseif ($aksi == 'tampil_user') {
+            $data = $abc->tampil_semua_user();
         }
 
         http_response_code(200); 

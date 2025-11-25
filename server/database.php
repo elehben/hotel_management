@@ -126,10 +126,9 @@ class Database
 
     public function ubah_reservasi($data, $services = [])
     {   
-        // 1. Update Reservasi
-        // Trigger 'trg_update_total_room_cost' akan berjalan otomatis saat tanggal/kamar berubah
+        // 1. Update Data Reservasi (Kamar/Tanggal)
+        // Trigger trg_update_total_room_cost di DB akan jalan otomatis update harga kamar
         $query = $this->conn->prepare("UPDATE Reservations SET room_id=?, check_in_date=?, check_out_date=?, status=? WHERE reservation_id=?");
-        
         $query->execute(array(
             $data['room_id'],
             $data['check_in'],
@@ -138,17 +137,18 @@ class Database
             $data['reservation_id']
         ));   
 
-        // 2. Reset Services (Hapus charge lama, masukkan baru)
-        // Trigger 'trg_edit_service_on_bill' akan otomatis update Guest_Bills
+        // 2. HAPUS Layanan Lama
+        // Trigger trg_recalc_bill_after_delete_service (YANG BARU KITA BUAT) akan jalan
+        // Total Payment akan turun kembali ke Harga Kamar saja
         $del = $this->conn->prepare("DELETE FROM Guest_Charges WHERE reservation_id = ?");
         $del->execute([$data['reservation_id']]);
 
-        // 3. Insert Services Baru
+        // 3. INSERT Layanan Baru
+        // Trigger trg_recalc_bill_after_insert_service akan jalan
+        // Total Payment akan naik sesuai jumlah layanan baru
         if (!empty($services)) {
             foreach ($services as $srv_id) {
                 $new_charge_id = $this->generate_id('Guest_Charges', 'charge_id');
-                
-                // Insert baru, trigger insert akan jalan lagi
                 $q_charge = $this->conn->prepare("INSERT INTO Guest_Charges (charge_id, reservation_id, service_id, quantity, amount_charged) VALUES (?, ?, ?, 1, 0)");
                 $q_charge->execute([$new_charge_id, $data['reservation_id'], $srv_id]);
             }
@@ -304,6 +304,43 @@ class Database
     public function hapus_layanan($id) {
         $query = $this->conn->prepare("DELETE FROM Services WHERE service_id=?");
         $query->execute([$id]);
+    }
+
+    // ... (Letakkan di dalam Class Database, sebelum penutup kurung kurawal '}') ...
+
+    // ============================================================
+    // MANAJEMEN USER (KHUSUS ADMIN)
+    // ============================================================
+    
+    public function tampil_semua_user() {
+        $query = $this->conn->prepare("SELECT user_id, username, role, created_at FROM Users ORDER BY user_id ASC");
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function tambah_user($data) {
+        // Generate User ID Baru (Format: 001, 002...)
+        $new_id = $this->generate_id('Users', 'user_id');
+
+        // Simpan password dengan SHA1 (Sesuai format login yang ada)
+        $query = $this->conn->prepare("INSERT INTO Users (user_id, username, password, role) VALUES (?, ?, SHA1(?), ?)");
+        
+        $query->execute(array(
+            $new_id, 
+            $data['username'], 
+            $data['password'], 
+            $data['role']
+        ));
+    }
+
+    public function hapus_user($id) {
+        // Mencegah penghapusan akun Admin Utama (001)
+        if ($id == '001') {
+            return false;
+        }
+        $query = $this->conn->prepare("DELETE FROM Users WHERE user_id=?");
+        $query->execute([$id]);
+        return true;
     }
 }
 ?>
