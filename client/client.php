@@ -163,7 +163,8 @@ class Client
 
 // Setup URL API 
 // Pastikan nama file servernya (api.php atau server.php) SESUAI dengan yang ada di folder server Anda
-$url = 'http://192.168.75.185/hotel_management/server/server.php'; 
+// $url = 'http://192.168.56.2/hotel_management/server/server.php'; 
+$url = 'http://10.91.33.234/hotel_management/server/server.php'; 
 
 // Buat objek baru dari class Client
 $abc = new Client($url);
