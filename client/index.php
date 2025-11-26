@@ -1,5 +1,11 @@
 <?php
 include "client.php";
+// Jika user sudah login, siapkan data list untuk modal tambah reservasi
+if (isset($_COOKIE['jwt'])) {
+    $list_kamar = $abc->get_list_kamar($_COOKIE['jwt']);
+    $list_service = $abc->get_list_service($_COOKIE['jwt']);
+    $list_tamu = $abc->get_list_tamu($_COOKIE['jwt']);
+}
 ?>
 <!doctype html>
 <html>
@@ -37,44 +43,197 @@ include "client.php";
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg" style="background-color: #e3f2fd;" data-bs-theme="light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">Hotel Management</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
 
-        <div class="collapse navbar-collapse" id="mainNav">
-            <?php if (isset($_COOKIE['jwt'])) { ?>
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="?page=home"><i class="bi bi-house me-1"></i> Home</a></li>
-
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="masterDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-folder me-1"></i> Master Data</a>
-                    <ul class="dropdown-menu" aria-labelledby="masterDropdown">
-                        <li><a class="dropdown-item" href="?page=data-tamu">Data Tamu</a></li>
-                        <li><a class="dropdown-item" href="?page=data-kamar">Data Kamar</a></li>
-                        <li><a class="dropdown-item" href="?page=data-layanan">Data Layanan</a></li>
-                    </ul>
-                </li>
-
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="transDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-cart me-1"></i> Transaksi</a>
-                    <ul class="dropdown-menu" aria-labelledby="transDropdown">
-                        <li><a class="dropdown-item" href="?page=tambah">Buat Reservasi</a></li>
-                        <li><a class="dropdown-item" href="?page=data-transaksi">List Transaksi</a></li>
-                    </ul>
-                </li>
-            </ul>
-
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-person me-1"></i> Halo, <?= isset($_COOKIE['username']) ? '<strong>'.$_COOKIE['username'].'</strong>' : 'User';?></a></li>
-                <li class="nav-item"><a class="nav-link" href="proses.php?aksi=logout" onclick="return confirm('Logout?')"><i class="bi bi-power me-1"></i> Logout</a></li>
-            </ul>
-            <?php } ?>
+<nav class="navbar navbar-light bg-light" data-bs-theme="light">
+        <div class="container-fluid">
+                <a class="navbar-brand" href="?page=home">Hotel Management</a>
+                <div class="d-flex ms-auto align-items-center">
+                        <?php if (isset($_COOKIE['jwt'])) { ?>
+                                <span class="me-3"> <i class="bi bi-person"></i> Halo, <strong><?=isset($_COOKIE['username'])?htmlspecialchars($_COOKIE['username']):'User'?></strong></span>
+                                <a class="btn btn-outline-danger btn-sm" href="proses.php?aksi=logout" onclick="return confirm('Logout?')"><i class="bi bi-power"></i> Logout</a>
+                        <?php } else { ?>
+                                <a class="btn btn-primary btn-sm" href="?page=login">Login</a>
+                        <?php } ?>
+                </div>
         </div>
-    </div>
 </nav>
+
+<!-- Sidebar Static -->
+<div id="sidebar" class="sidebar expanded">
+    <div class="sidebar-header d-flex align-items-center justify-content-between px-3 py-2">
+        <span class="fw-bold">Menu</span>
+        <button class="btn btn-sm btn-light" id="sidebarToggle" type="button" title="Toggle sidebar"><i class="bi bi-list"></i></button>
+    </div>
+    <div class="sidebar-body">
+        <?php if (isset($_COOKIE['jwt'])) { ?>
+            <ul class="nav nav-pills flex-column">
+                <!-- <li class="nav-item"><a class="nav-link" href="?page=home"><i class="bi bi-house"></i> <span class="sidebar-label">Home</span></a></li> -->
+                <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#reservasiModal"><i class="bi bi-plus-circle"></i> <span class="sidebar-label">Buat Reservasi</span></a></li>
+                <li class="nav-item"><a class="nav-link" href="?page=data-tamu"><i class="bi bi-people"></i> <span class="sidebar-label">Data Tamu</span></a></li>
+                <li class="nav-item"><a class="nav-link" href="?page=data-kamar"><i class="bi bi-door-open"></i> <span class="sidebar-label">Data Kamar</span></a></li>
+                <li class="nav-item"><a class="nav-link" href="?page=data-layanan"><i class="bi bi-list-check"></i> <span class="sidebar-label">Data Layanan</span></a></li>
+                <li class="nav-item"><a class="nav-link" href="?page=data-transaksi"><i class="bi bi-receipt"></i> <span class="sidebar-label">List Transaksi</span></a></li>
+            </ul>
+        <?php } else { ?>
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item"><a class="nav-link" href="?page=home"><i class="bi bi-house"></i> <span class="sidebar-label">Home</span></a></li>
+            </ul>
+        <?php } ?>
+    </div>
+</div>
+
+<style>
+    body {
+        padding-left: 260px;
+        transition: padding-left 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    body.no-transition, body.no-transition * {
+        transition: none !important;
+    }
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 260px;
+        background: #f8f9fa;
+        border-right: 1px solid #dee2e6;
+        z-index: 1040;
+        transition: width 0.3s cubic-bezier(0.4,0,0.2,1), background 0.2s;
+        overflow-x: hidden;
+    }
+    body.no-transition .sidebar,
+    body.no-transition .sidebar *,
+    body.no-transition .sidebar-label {
+        transition: none !important;
+    }
+    .sidebar .sidebar-header {
+        height: 56px;
+        border-bottom: 1px solid #dee2e6;
+        transition: padding 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .sidebar .sidebar-body {
+        padding: 1rem 0.5rem;
+        transition: padding 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .sidebar .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        color: #333;
+        font-size: 1rem;
+        transition: background 0.15s, color 0.15s, padding 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .sidebar .nav-link.active, .sidebar .nav-link:hover {
+        background: #e9ecef;
+        color: #0d6efd;
+    }
+    .sidebar-label {
+        display: inline-block;
+        opacity: 1;
+        max-width: 200px;
+        transition: opacity 0.2s, max-width 0.3s cubic-bezier(0.4,0,0.2,1);
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    .sidebar.collapsed {
+        width: 70px;
+        transition: width 0.3s cubic-bezier(0.4,0,0.2,1), background 0.2s;
+    }
+    .sidebar.collapsed .sidebar-label {
+        opacity: 0;
+        max-width: 0;
+        transition: opacity 0.15s, max-width 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .sidebar.collapsed .sidebar-header span {
+        opacity: 0;
+        max-width: 0;
+        transition: opacity 0.15s, max-width 0.3s cubic-bezier(0.4,0,0.2,1);
+        display: inline-block;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    .sidebar.collapsed .sidebar-header {
+        justify-content: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    @media (max-width: 767px) {
+        /* Keep sidebar visible on mobile. Allow collapse to icons-only but
+           don't hide the sidebar entirely. */
+        .sidebar {
+            left: 0;
+            width: 260px;
+            transition: width 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        .sidebar.collapsed {
+            width: 70px;
+        }
+        .sidebar.expanded {
+            left: 0;
+        }
+        body {
+            /* keep content shifted so sidebar remains visible */
+            padding-left: 260px;
+            transition: padding-left 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+    }
+</style>
+
+<script>
+    // Hilangkan animasi saat halaman load/refresh
+    document.body.classList.add('no-transition');
+    window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            document.body.classList.remove('no-transition');
+        }, 10);
+    });
+
+    // Sidebar collapse/expand
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarClose = document.getElementById('sidebarClose');
+    function setSidebarState(collapsed) {
+        document.body.classList.remove('no-transition');
+        if (collapsed) {
+            sidebar.classList.add('collapsed');
+            document.body.style.paddingLeft = '70px';
+            localStorage.setItem('sidebar-collapsed', '1');
+        } else {
+            sidebar.classList.remove('collapsed');
+            document.body.style.paddingLeft = '260px';
+            localStorage.setItem('sidebar-collapsed', '0');
+        }
+    }
+    sidebarToggle.addEventListener('click', function() {
+        setSidebarState(!sidebar.classList.contains('collapsed'));
+    });
+    // Responsive: show/hide sidebar on mobile
+    function handleResize() {
+        // Keep sidebar visible on mobile: mirror desktop behavior but allow
+        // collapsed state to be respected on small screens as well.
+        sidebar.classList.add('expanded');
+        if (localStorage.getItem('sidebar-collapsed') === '1') {
+            sidebar.classList.add('collapsed');
+            document.body.style.paddingLeft = '70px';
+        } else {
+            sidebar.classList.remove('collapsed');
+            document.body.style.paddingLeft = '260px';
+        }
+    }
+    window.addEventListener('resize', handleResize);
+    // Initial state
+    if (window.innerWidth >= 768) {
+        sidebar.classList.add('expanded');
+        if (localStorage.getItem('sidebar-collapsed') === '1') {
+            sidebar.classList.add('collapsed');
+            document.body.style.paddingLeft = '70px';
+        }
+    }
+    handleResize();
+</script>
 
 <div class="container">
 <fieldset>
@@ -281,12 +440,22 @@ include "client.php";
         <div class="mb-3 row">
             <label class="col-sm-3 col-form-label">Status</label>
             <div class="col-sm-9">
-                <select name="status" class="form-select">
-                    <option value="Available" <?=($r->status=='Available')?'selected':''?>>Available</option>
-                    <option value="Cleaning" <?=($r->status=='Cleaning')?'selected':''?>>Cleaning</option>
-                    <option value="Maintenance" <?=($r->status=='Maintenance')?'selected':''?>>Maintenance</option>
-                    <option value="Occupied" <?=($r->status=='Occupied')?'selected':''?>>Occupied</option>
-                </select>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="status" id="statusAvailable" value="Available" <?=($r->status=='Available')?'checked':''?>>
+                    <label class="form-check-label" for="statusAvailable">Available</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="status" id="statusCleaning" value="Cleaning" <?=($r->status=='Cleaning')?'checked':''?>>
+                    <label class="form-check-label" for="statusCleaning">Cleaning</label>
+                </div><br>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="status" id="statusMaintenance" value="Maintenance" <?=($r->status=='Maintenance')?'checked':''?>>
+                    <label class="form-check-label" for="statusMaintenance">Maintenance</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="status" id="statusOccupied" value="Occupied" <?=($r->status=='Occupied')?'checked':''?>>
+                    <label class="form-check-label" for="statusOccupied">Occupied</label>
+                </div>
             </div>
         </div>
 
@@ -410,75 +579,37 @@ include "client.php";
 </div>
 <?php 
 } else if (isset($_GET['page']) && $_GET['page']=='tambah' && isset($_COOKIE['jwt'])) { 
-    // Load Data dari API
-    $list_kamar = $abc->get_list_kamar($_COOKIE['jwt']);
-    $list_service = $abc->get_list_service($_COOKIE['jwt']);
-    $list_tamu = $abc->get_list_tamu($_COOKIE['jwt']); 
+    // Jika user membuka ?page=tambah, arahkan ke modal: buka modal dan hapus param URL
 ?>
-<div class="mt-5 mb-4 rounded-3">
-<legend>Buat Reservasi Baru</legend>
-        <div class="row">
-            <div class="col-md-8">
-                <div class="alert alert-info">
-                    <form name="form1" method="POST" action="proses.php" novalidate>
-                        <input type="hidden" name="aksi" value="tambah"/>
-                        <input type="hidden" name="jwt" value="<?=$_COOKIE['jwt']?>"/>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    function openModalWhenReady(){
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            var el = document.getElementById('reservasiModal');
+            if (el) {
+                var m = new bootstrap.Modal(el);
+                m.show();
+            }
+        } else {
+            setTimeout(openModalWhenReady, 100);
+        }
+    }
+    openModalWhenReady();
 
-                        <div class="mb-3">
-                            <label class="form-label">Nama Tamu</label>
-                            <select name="guest_id" required class="form-select">
-                                <option value="">-- Pilih Tamu --</option>
-                                <?php foreach($list_tamu as $tamu) { ?>
-                                    <option value="<?=$tamu->guest_id?>"><?=$tamu->full_name?> (<?=$tamu->phone_number?>)</option>
-                                <?php } ?>
-                            </select>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Check In</label>
-                                <input type="date" id="check_in_date" name="check_in_date" class="form-control" onchange="calculateTotal()" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Check Out</label>
-                                <input type="date" id="check_out_date" name="check_out_date" class="form-control" onchange="calculateTotal()" required>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Pilih Kamar</label>
-                            <select name="room_id" id="room_id" class="form-select" onchange="calculateTotal()" required>
-                                <option value="" data-price="0">-- Pilih Tipe Kamar --</option>
-                                <?php foreach($list_kamar as $kamar) { ?>
-                                    <option value="<?=$kamar->room_id?>" data-price="<?=$kamar->base_price?>">
-                                        <?=$kamar->room_type_name?> (Rp <?=number_format($kamar->base_price)?> / malam)
-                                    </option>
-                                <?php } ?>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Layanan Tambahan</label>
-                            <div>
-                                <?php if($list_service) { foreach($list_service as $svc) { ?>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input service-checkbox" type="checkbox" name="services[]" 
-                                                     value="<?=$svc->service_id?>" data-price="<?=$svc->price?>" data-name="<?=$svc->service_name?>" onchange="calculateTotal()">
-                                        <label class="form-check-label"><?=$svc->service_name?> (+ Rp <?=number_format($svc->price)?>)</label>
-                                    </div>
-                                <?php }} else { echo "Tidak ada layanan tersedia"; } ?>
-                            </div>
-                        </div>
-
-                        <div class="mt-3">
-                            <button type="submit" name="simpan" class="btn btn-primary">Simpan</button>
-                            <a href="?page=data-transaksi" class="btn btn-secondary ms-2">Batal</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-</div>
+    // Hapus parameter ?page=tambah agar URL bersih (tanpa reload)
+    if (window.history && window.history.replaceState) {
+        try {
+            var u = new URL(window.location);
+            u.searchParams.delete('page');
+            window.history.replaceState({}, document.title, u.pathname + u.search + u.hash);
+        } catch (e) {
+            // fallback: coba hapus dengan replaceState sederhana
+            var href = window.location.href.replace(/[?&]page=tambah/, '');
+            window.history.replaceState({}, document.title, href);
+        }
+    }
+});
+</script>
 <?php 
 } elseif (isset($_GET['page']) && $_GET['page']=='ubah' && isset($_COOKIE['jwt'])) {    
     $data_req = array("jwt"=>$_COOKIE['jwt'], "reservation_id"=>$_GET['id']); 
@@ -505,7 +636,7 @@ include "client.php";
                         <div class="mb-3">
                             <label class="form-label">ID Reservasi</label>
                             <div>
-                                <input type="text" disabled class="form-control-plaintext" value="<?=$r->reservation_id?>">
+                                <input type="text" class="form-control-plaintext" value="<?=$r->reservation_id?>" disabled>
                                 <small class="text-muted">Tamu: <strong><?=$r->guest_id?></strong></small>
                             </div>
                         </div>
@@ -673,13 +804,13 @@ include "client.php";
         <h2>Sistem Management Hotel</h2>
         <p>Sistem informasi untuk mengelola reservasi kamar, layanan tambahan, dan tagihan tamu.</p>
 
-        <?php if(!isset($_COOKIE['jwt'])) { ?>
+            <?php if(!isset($_COOKIE['jwt'])) { ?>
             <p><a class="btn btn-primary btn-lg" href="?page=login">Login Staff &raquo;</a></p>
         <?php } else if (isset($_GET['page']) && $_GET['page']=='ubah' && isset($_COOKIE['jwt'])) { ?>
         <?php } else if (isset($_GET['page']) && $_GET['page']=='data-transaksi' && isset($_COOKIE['jwt'])) { ?>
         <?php } else { ?>
             <p>Halo, Selamat Datang <strong><?=$_COOKIE['username']?></strong> (<?=$_COOKIE['role']?>)</p>
-            <a class="btn btn-info" href="?page=tambah">Buat Reservasi Baru</a>
+            <a class="btn btn-info" href="#" data-bs-toggle="modal" data-bs-target="#reservasiModal">Buat Reservasi Baru</a>
             <a class="btn btn-secondary ms-2" href="?page=data-transaksi">Lihat Transaksi</a>
         <?php } ?>
     </div>
@@ -688,6 +819,76 @@ include "client.php";
 <?php } ?>
 
 <script src="js/jquery.js"></script>
+<?php if (isset($_COOKIE['jwt'])) { ?>
+<!-- Modal Buat Reservasi -->
+<div class="modal fade" id="reservasiModal" tabindex="-1" aria-labelledby="reservasiModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="reservasiModalLabel">Buat Reservasi Baru</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form name="form_modal_reservasi" method="POST" action="proses.php" novalidate>
+            <input type="hidden" name="aksi" value="tambah"/>
+            <input type="hidden" name="jwt" value="<?=$_COOKIE['jwt']?>"/>
+
+            <div class="mb-3">
+                <label class="form-label">Nama Tamu</label>
+                <select name="guest_id" required class="form-select">
+                    <option value="">-- Pilih Tamu --</option>
+                    <?php if(!empty($list_tamu)) foreach($list_tamu as $tamu) { ?>
+                        <option value="<?=$tamu->guest_id?>"><?=$tamu->full_name?> (<?=$tamu->phone_number?>)</option>
+                    <?php } ?>
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Check In</label>
+                    <input type="date" id="check_in_date" name="check_in_date" class="form-control" onchange="calculateTotal()" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Check Out</label>
+                    <input type="date" id="check_out_date" name="check_out_date" class="form-control" onchange="calculateTotal()" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Pilih Kamar</label>
+                <select name="room_id" id="room_id" class="form-select" onchange="calculateTotal()" required>
+                    <option value="" data-price="0">-- Pilih Tipe Kamar --</option>
+                    <?php if(!empty($list_kamar)) foreach($list_kamar as $kamar) { ?>
+                        <option value="<?=$kamar->room_id?>" data-price="<?=$kamar->base_price?>">
+                            <?=$kamar->room_type_name?> (Rp <?=number_format($kamar->base_price)?> / malam)
+                        </option>
+                    <?php } ?>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Layanan Tambahan</label>
+                <div>
+                    <?php if(!empty($list_service)) { foreach($list_service as $svc) { ?>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input service-checkbox" type="checkbox" name="services[]" 
+                                         value="<?=$svc->service_id?>" data-price="<?=$svc->price?>" data-name="<?=$svc->service_name?>" onchange="calculateTotal()">
+                            <label class="form-check-label"><?=$svc->service_name?> (+ Rp <?=number_format($svc->price)?>)</label>
+                        </div>
+                    <?php } } else { echo "Tidak ada layanan tersedia"; } ?>
+                </div>
+            </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        <button type="submit" name="simpan" class="btn btn-primary">Simpan Reservasi</button>
+      </div>
+        </form>
+    </div>
+  </div>
+</div>
+<?php } ?>
 <script src="js/bootstrap.bundle.min.js"></script>
 
 <script src="js/jqBootstrapValidation.js"></script>
