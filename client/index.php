@@ -37,15 +37,20 @@ if (isset($_COOKIE['jwt'])) {
         <form method="POST" action="proses.php" novalidate>
             <input type="hidden" name="aksi" value="login" />
             <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input type="text" name="username" class="form-control" required>
+                <div class="input-group flex-nowrap">
+                    <span class="input-group-text" id="addon-wrapping"><i class="bi bi-person"></i></span>
+                    <input type="text" name="username" class="form-control" placeholder="Username" required>
+                </div>
             </div>
             <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
+                <div class="input-group flex-nowrap">
+                    <span class="input-group-text" id="addon-wrapping"><i class="bi bi-lock"></i></span>
+                    <input type="password" name="password" class="form-control" placeholder="Password" required>
+                </div>
             </div>
-            <div class="d-grid mb-2">
-                <button type="submit" class="btn btn-primary btn-lg">Masuk</button>
+            <hr>
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary">Masuk</button>
             </div>
         </form>
     </div>
@@ -118,10 +123,6 @@ if (isset($_COOKIE['jwt'])) {
                 <li class="nav-item"><a class="nav-link" href="?page=data-kamar"><i class="bi bi-door-open"></i> <span class="sidebar-label">Data Kamar</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="?page=data-layanan"><i class="bi bi-list-check"></i> <span class="sidebar-label">Data Layanan</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="?page=data-transaksi"><i class="bi bi-receipt"></i> <span class="sidebar-label">List Transaksi</span></a></li>
-            </ul>
-        <?php } else { ?>
-            <ul class="nav nav-pills flex-column">
-                <li class="nav-item"><a class="nav-link" href="?page=login"><i class="bi bi-lock"></i> <span class="sidebar-label">Login</span></a></li>
             </ul>
         <?php } ?>
     </div>
@@ -283,49 +284,11 @@ if (isset($_COOKIE['jwt'])) {
 <div class="container">
 <fieldset>
 
-<?php if (isset($_GET['page']) && $_GET['page']=='login' && !isset($_COOKIE['jwt'])) { ?>
-<div class="mt-5 mb-4 rounded-3">
-    <legend>Login Sistem (Admin/Staf)</legend>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="alert alert-info">
-                    <form name="form1" method="POST" action="proses.php" novalidate>
-                        <input type="hidden" name="aksi" value="login"/>
-
-                        <div class="mb-3 row">
-                            <label for="username" class="col-sm-3 col-form-label">Username</label>
-                            <div class="col-sm-9">
-                                <input id="username" type="text" name="username" class="form-control form-control-sm" placeholder="Username"
-                                        rel="tooltip" data-placement="right" title="Masukkan Username"
-                                        required data-validation-required-message="Harus diisi">
-                            </div>
-                        </div>
-
-                        <div class="mb-3 row">
-                            <label for="password" class="col-sm-3 col-form-label">Password</label>
-                            <div class="col-sm-9">
-                                <input id="password" type="password" name="password" class="form-control form-control-sm" placeholder="Password"
-                                        rel="tooltip" data-placement="right" title="Masukkan Password"
-                                        required data-validation-required-message="Harus diisi">
-                            </div>
-                        </div>
-
-                        <div class="mb-3 row">
-                            <div class="col-sm-9 offset-sm-3">
-                                <button type="submit" name="simpan" class="btn btn-primary"><i class="bi bi-lock-fill me-1"></i> Login</button>
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
-            </div>
-        </div>
-</div>
-<?php 
+<?php   
 // ==================================================================
 // MODUL DATA TAMU
 // ==================================================================
-} elseif (isset($_GET['page']) && $_GET['page']=='data-tamu' && isset($_COOKIE['jwt'])) { 
+if (isset($_GET['page']) && $_GET['page']=='data-tamu' && isset($_COOKIE['jwt'])) { 
     $data = $abc->get_general($_COOKIE['jwt'], 'tampil_tamu');
 ?>
 <div class="mt-5 mb-4 rounded-3">
@@ -350,8 +313,10 @@ if (isset($_COOKIE['jwt'])) {
                 <td><?=$r->email?></td>
                 <td><?=$r->phone_number?></td>
                 <td style="text-align:center">
-                    <a href="?page=ubah-tamu&id=<?=$r->guest_id?>" class="btn btn-success btn-sm"><i class="bi bi-pencil"></i></a>
-                    <a href="proses.php?aksi=hapus_tamu&guest_id=<?=$r->guest_id?>&jwt=<?=$_COOKIE['jwt']?>" class="btn btn-danger btn-sm" onclick="return confirm('Hapus tamu ini?')"><i class="bi bi-x"></i></a>
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        <a href="?page=ubah-tamu&id=<?=$r->guest_id?>" class="btn btn-success btn-sm"><i class="bi bi-pencil"></i></a>
+                        <a href="proses.php?aksi=hapus_tamu&guest_id=<?=$r->guest_id?>&jwt=<?=$_COOKIE['jwt']?>" class="btn btn-danger btn-sm" onclick="return confirm('Hapus tamu ini?')"><i class="bi bi-x"></i></a>
+                    </div>
                 </td>
             </tr>
         <?php } ?>
@@ -432,8 +397,10 @@ if (isset($_COOKIE['jwt'])) {
                 <?php $roomStatusClass = $r->status=='Available' ? 'bg-success' : 'bg-warning text-dark'; ?>
                 <td><span class="badge <?=$roomStatusClass?>"><?=$r->status?></span></td>
                 <td style="text-align:center">
-                    <a href="?page=ubah-kamar&id=<?=$r->room_id?>" class="btn btn-success btn-sm"><i class="bi bi-pencil"></i></a>
-                    <a href="proses.php?aksi=hapus_kamar&room_id=<?=$r->room_id?>&jwt=<?=$_COOKIE['jwt']?>" class="btn btn-danger btn-sm" onclick="return confirm('Hapus kamar ini?')"><i class="bi bi-x"></i></a>
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        <a href="?page=ubah-kamar&id=<?=$r->room_id?>" class="btn btn-success btn-sm"><i class="bi bi-pencil"></i></a>
+                        <a href="proses.php?aksi=hapus_kamar&room_id=<?=$r->room_id?>&jwt=<?=$_COOKIE['jwt']?>" class="btn btn-danger btn-sm" onclick="return confirm('Hapus kamar ini?')"><i class="bi bi-x"></i></a>
+                    </div>
                 </td>
             </tr>
         <?php } ?>
@@ -539,8 +506,10 @@ if (isset($_COOKIE['jwt'])) {
                 <td style="text-align:right">Rp <?=number_format($r->price)?></td>
                 <td><?php echo $r->is_available ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-secondary">Non-Aktif</span>'; ?></td>
                 <td style="text-align:center">
-                    <a href="?page=ubah-layanan&id=<?=$r->service_id?>" class="btn btn-success btn-sm"><i class="bi bi-pencil"></i></a>
-                    <a href="proses.php?aksi=hapus_layanan&service_id=<?=$r->service_id?>&jwt=<?=$_COOKIE['jwt']?>" class="btn btn-danger btn-sm" onclick="return confirm('Hapus layanan ini?')"><i class="bi bi-x"></i></a>
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        <a href="?page=ubah-layanan&id=<?=$r->service_id?>" class="btn btn-success btn-sm"><i class="bi bi-pencil"></i></a>
+                        <a href="proses.php?aksi=hapus_layanan&service_id=<?=$r->service_id?>&jwt=<?=$_COOKIE['jwt']?>" class="btn btn-danger btn-sm" onclick="return confirm('Hapus layanan ini?')"><i class="bi bi-x"></i></a>
+                    </div>
                 </td>
             </tr>
         <?php } ?>
@@ -828,8 +797,10 @@ document.addEventListener('DOMContentLoaded', function(){
             </td>
 			
             <td style="text-align:center;">
-                <a href="?page=ubah&id=<?=$r->reservation_id?>" class="btn btn-success btn-sm" title="Edit"><i class="bi bi-pencil"></i></a>
-                <a href="proses.php?aksi=hapus&reservation_id=<?=$r->reservation_id?>&jwt=<?=$_COOKIE['jwt']?>" class="btn btn-danger btn-sm" onclick="return confirm('Hapus data ini beserta tagihannya?')" title="Hapus"><i class="bi bi-x"></i></a>
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    <a href="?page=ubah&id=<?=$r->reservation_id?>" class="btn btn-success btn-sm" title="Edit"><i class="bi bi-pencil"></i></a>
+                    <a href="proses.php?aksi=hapus&reservation_id=<?=$r->reservation_id?>&jwt=<?=$_COOKIE['jwt']?>" class="btn btn-danger btn-sm" onclick="return confirm('Hapus data ini beserta tagihannya?')" title="Hapus"><i class="bi bi-x"></i></a>
+                </div>
             </td>
         </tr>
     <?php   
