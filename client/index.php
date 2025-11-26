@@ -313,7 +313,7 @@ if (isset($_GET['page']) && $_GET['page']=='data-tamu' && isset($_COOKIE['jwt'])
                 <td><?=$r->email?></td>
                 <td><?=$r->phone_number?></td>
                 <td style="text-align:center">
-                    <div class="btn-group" role="group" aria-label="Basic example">
+                    <div class="btn-group" role="group">
                         <a href="?page=ubah-tamu&id=<?=$r->guest_id?>" class="btn btn-success btn-sm"><i class="bi bi-pencil"></i></a>
                         <a href="proses.php?aksi=hapus_tamu&guest_id=<?=$r->guest_id?>&jwt=<?=$_COOKIE['jwt']?>" class="btn btn-danger btn-sm" onclick="return confirm('Hapus tamu ini?')"><i class="bi bi-x"></i></a>
                     </div>
@@ -397,7 +397,7 @@ if (isset($_GET['page']) && $_GET['page']=='data-tamu' && isset($_COOKIE['jwt'])
                 <?php $roomStatusClass = $r->status=='Available' ? 'bg-success' : 'bg-warning text-dark'; ?>
                 <td><span class="badge <?=$roomStatusClass?>"><?=$r->status?></span></td>
                 <td style="text-align:center">
-                    <div class="btn-group" role="group" aria-label="Basic example">
+                    <div class="btn-group" role="group">
                         <a href="?page=ubah-kamar&id=<?=$r->room_id?>" class="btn btn-success btn-sm"><i class="bi bi-pencil"></i></a>
                         <a href="proses.php?aksi=hapus_kamar&room_id=<?=$r->room_id?>&jwt=<?=$_COOKIE['jwt']?>" class="btn btn-danger btn-sm" onclick="return confirm('Hapus kamar ini?')"><i class="bi bi-x"></i></a>
                     </div>
@@ -506,7 +506,7 @@ if (isset($_GET['page']) && $_GET['page']=='data-tamu' && isset($_COOKIE['jwt'])
                 <td style="text-align:right">Rp <?=number_format($r->price)?></td>
                 <td><?php echo $r->is_available ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-secondary">Non-Aktif</span>'; ?></td>
                 <td style="text-align:center">
-                    <div class="btn-group" role="group" aria-label="Basic example">
+                    <div class="btn-group" role="group">
                         <a href="?page=ubah-layanan&id=<?=$r->service_id?>" class="btn btn-success btn-sm"><i class="bi bi-pencil"></i></a>
                         <a href="proses.php?aksi=hapus_layanan&service_id=<?=$r->service_id?>&jwt=<?=$_COOKIE['jwt']?>" class="btn btn-danger btn-sm" onclick="return confirm('Hapus layanan ini?')"><i class="bi bi-x"></i></a>
                     </div>
@@ -637,85 +637,77 @@ document.addEventListener('DOMContentLoaded', function(){
 ?>
 <div class="mt-5 mb-4 rounded-3">
 <legend>Ubah Data Reservasi</legend>  
-<div class="row">
-    <div class="col-md-8">
-        <div class="alert alert-info">
-            <form name="form1" method="post" action="proses.php" class="form-horizontal">
-                <input type="hidden" name="aksi" value="ubah"/>
-                <input type="hidden" name="reservation_id" value="<?=$r->reservation_id?>" />
-                <input type="hidden" name="jwt" value="<?=$_COOKIE['jwt']?>"/>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label">ID Reservasi</label>
-                            <div>
-                                <input type="text" class="form-control-plaintext" value="<?=$r->reservation_id?>" disabled>
-                                <small class="text-muted">Tamu: <strong><?=$r->guest_id?></strong></small>
-                            </div>
-                        </div>
+    <form name="form1" method="post" action="proses.php" class="form-horizontal">
+        <input type="hidden" name="aksi" value="ubah"/>
+        <input type="hidden" name="reservation_id" value="<?=$r->reservation_id?>" />
+        <input type="hidden" name="jwt" value="<?=$_COOKIE['jwt']?>"/>
         
-                        <div class="mb-3">
-                            <label class="form-label">Check In</label>
-                            <input type="date" id="check_in_date" name="check_in_date" class="form-control" value="<?=$r->check_in_date?>" onchange="calculateTotal()">
-                        </div>
-        
-                        <div class="mb-3">
-                            <label class="form-label">Check Out</label>
-                            <input type="date" id="check_out_date" name="check_out_date" class="form-control" value="<?=$r->check_out_date?>" onchange="calculateTotal()">
-                        </div>
-        
-                        <div class="mb-3">
-                            <label class="form-label">Pilih Kamar</label>
-                            <select name="room_id" id="room_id" class="form-select" onchange="calculateTotal()">
-                                <?php foreach($list_kamar as $kamar) { 
-                                    $selected = ($kamar->room_id == $r->room_id) ? 'selected' : '';
-                                ?>
-                                    <option value="<?=$kamar->room_id?>" data-price="<?=$kamar->base_price?>" <?=$selected?>>
-                                        <?=$kamar->room_type_name?> (Rp <?=number_format($kamar->base_price)?>)
-                                    </option>
-                                <?php } ?>
-                            </select>
-                        </div>
-        
-                        <div class="mb-3">
-                            <label class="form-label">Layanan</label>
-                            <div>
-                                <?php foreach($list_service as $svc) { 
-                                    $checked = in_array($svc->service_id, $selected_svcs) ? 'checked' : '';
-                                ?>
-                                    <div class="form-check">
-                                        <input class="form-check-input service-checkbox" type="checkbox" name="services[]" 
-                                               value="<?=$svc->service_id?>" data-price="<?=$svc->price?>" data-name="<?=$svc->service_name?>" onchange="calculateTotal()" <?=$checked?>>
-                                        <label class="form-check-label"><?=$svc->service_name?> (+ Rp <?=number_format($svc->price)?>)</label>
-                                    </div>
-                                <?php } ?>
-                            </div>
-                        </div>
-        
-                        <div class="mb-3">
-                            <label class="form-label">Status</label>
-                            <select name="status" class="form-select">
-                                <option value="Pending" <?=($r->status=='Pending')?'selected':''?>>Pending</option>
-                                <option value="Confirmed" <?=($r->status=='Confirmed')?'selected':''?>>Confirmed</option>
-                                <option value="Checked-in" <?=($r->status=='Checked-in')?'selected':''?>>Checked-in</option>
-                                <option value="Cancelled" <?=($r->status=='Cancelled')?'selected':''?>>Cancelled</option>
-                            </select>
-                        </div>
-        
-                        <div class="mb-3">
-                            <button type="submit" name="ubah" class="btn btn-primary">Simpan</button>
-                            <a href="?page=data-transaksi" class="btn btn-secondary ms-2">Batal</a>
-                        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">ID Reservasi</label>
+                    <div>
+                        <input type="text" class="form-control" value="<?=$r->reservation_id?>" readonly disabled>
+                        <small class="text-muted">Tamu: <strong><?=$r->guest_id?></strong></small>
                     </div>
                 </div>
-            </form>
-            <script>calculateTotal();</script>
+
+                <div class="mb-3">
+                    <label class="form-label">Check In</label>
+                    <input type="date" id="check_in_date" name="check_in_date" class="form-control" value="<?=$r->check_in_date?>" onchange="calculateTotal()">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Check Out</label>
+                    <input type="date" id="check_out_date" name="check_out_date" class="form-control" value="<?=$r->check_out_date?>" onchange="calculateTotal()">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Pilih Kamar</label>
+                    <select name="room_id" id="room_id" class="form-select" onchange="calculateTotal()">
+                        <?php foreach($list_kamar as $kamar) { 
+                            $selected = ($kamar->room_id == $r->room_id) ? 'selected' : '';
+                        ?>
+                            <option value="<?=$kamar->room_id?>" data-price="<?=$kamar->base_price?>" <?=$selected?>>
+                                <?=$kamar->room_type_name?> (Rp <?=number_format($kamar->base_price)?>)
+                            </option>
+                        <?php } ?>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Layanan</label>
+                    <div>
+                        <?php foreach($list_service as $svc) { 
+                            $checked = in_array($svc->service_id, $selected_svcs) ? 'checked' : '';
+                        ?>
+                            <div class="form-check">
+                                <input class="form-check-input service-checkbox" type="checkbox" name="services[]" 
+                                        value="<?=$svc->service_id?>" data-price="<?=$svc->price?>" data-name="<?=$svc->service_name?>" onchange="calculateTotal()" <?=$checked?>>
+                                <label class="form-check-label"><?=$svc->service_name?> (+ Rp <?=number_format($svc->price)?>)</label>
+                            </div>
+                        <?php } ?>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="Pending" <?=($r->status=='Pending')?'selected':''?>>Pending</option>
+                        <option value="Confirmed" <?=($r->status=='Confirmed')?'selected':''?>>Confirmed</option>
+                        <option value="Checked-in" <?=($r->status=='Checked-in')?'selected':''?>>Checked-in</option>
+                        <option value="Cancelled" <?=($r->status=='Cancelled')?'selected':''?>>Cancelled</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <button type="submit" name="ubah" class="btn btn-primary">Simpan</button>
+                    <a href="?page=data-transaksi" class="btn btn-secondary ms-2">Batal</a>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-</div>
-    
+    </form>
+    <script>calculateTotal();</script>
 <?php 
 } else if (isset($_GET['page']) && $_GET['page']=='data-transaksi' && isset($_COOKIE['jwt'])) {
 ?>
@@ -797,7 +789,7 @@ document.addEventListener('DOMContentLoaded', function(){
             </td>
 			
             <td style="text-align:center;">
-                <div class="btn-group" role="group" aria-label="Basic example">
+                <div class="btn-group" role="group">
                     <a href="?page=ubah&id=<?=$r->reservation_id?>" class="btn btn-success btn-sm" title="Edit"><i class="bi bi-pencil"></i></a>
                     <a href="proses.php?aksi=hapus&reservation_id=<?=$r->reservation_id?>&jwt=<?=$_COOKIE['jwt']?>" class="btn btn-danger btn-sm" onclick="return confirm('Hapus data ini beserta tagihannya?')" title="Hapus"><i class="bi bi-x"></i></a>
                 </div>
@@ -886,7 +878,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 <label class="form-label">Layanan Tambahan</label>
                 <div>
                     <?php if(!empty($list_service)) { foreach($list_service as $svc) { ?>
-                        <div class="form-check form-check-inline">
+                        <div class="form-check">
                             <input class="form-check-input service-checkbox" type="checkbox" name="services[]" 
                                          value="<?=$svc->service_id?>" data-price="<?=$svc->price?>" data-name="<?=$svc->service_name?>" onchange="calculateTotal()">
                             <label class="form-check-label"><?=$svc->service_name?> (+ Rp <?=number_format($svc->price)?>)</label>
