@@ -117,7 +117,7 @@ if (isset($_COOKIE['jwt'])) {
     <div class="sidebar-body">
         <?php if (isset($_COOKIE['jwt'])) { ?>
             <ul class="nav nav-pills flex-column">
-                <!-- <li class="nav-item"><a class="nav-link" href="?page=home"><i class="bi bi-house"></i> <span class="sidebar-label">Home</span></a></li> -->
+                <li class="nav-item"><a class="nav-link" href="?page=home"><i class="bi bi-house"></i> <span class="sidebar-label">Home</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#reservasiModal"><i class="bi bi-plus-circle"></i> <span class="sidebar-label">Buat Reservasi</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="?page=data-tamu"><i class="bi bi-people"></i> <span class="sidebar-label">Data Tamu</span></a></li>
                 <li class="nav-item"><a class="nav-link" href="?page=data-kamar"><i class="bi bi-door-open"></i> <span class="sidebar-label">Data Kamar</span></a></li>
@@ -176,6 +176,7 @@ if (isset($_COOKIE['jwt'])) {
         background: #e9ecef;
         color: #0d6efd;
     }
+
     .sidebar-label {
         display: inline-block;
         opacity: 1;
@@ -185,12 +186,15 @@ if (isset($_COOKIE['jwt'])) {
         overflow: hidden;
     }
     .sidebar.collapsed {
+        align-items: center;
         width: 70px;
         transition: width 0.3s cubic-bezier(0.4,0,0.2,1), background 0.2s;
     }
     .sidebar.collapsed .sidebar-label {
         opacity: 0;
         max-width: 0;
+        overflow: hidden;
+        visibility: hidden;
         transition: opacity 0.15s, max-width 0.3s cubic-bezier(0.4,0,0.2,1);
     }
     .sidebar.collapsed .sidebar-header span {
@@ -279,6 +283,35 @@ if (isset($_COOKIE['jwt'])) {
         }
     }
     handleResize();
+
+    // Set active sidebar item based on current page
+    function setActiveSidebar() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentPage = urlParams.get('page');
+        const navLinks = document.querySelectorAll('.sidebar .nav-link');
+        
+        navLinks.forEach(function(link) {
+            link.classList.remove('active');
+            const href = link.getAttribute('href');
+            if (href && href.includes('page=')) {
+                const linkPage = new URLSearchParams(href.split('?')[1]).get('page');
+                if (linkPage === currentPage) {
+                    link.classList.add('active');
+                }
+            }
+        });
+    }
+    setActiveSidebar();
+
+    // Add click event to set active state
+    document.querySelectorAll('.sidebar .nav-link').forEach(function(link) {
+        link.addEventListener('click', function() {
+            document.querySelectorAll('.sidebar .nav-link').forEach(function(l) {
+                l.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    });
 </script>
 
 <div class="container">
@@ -293,6 +326,7 @@ if (isset($_GET['page']) && $_GET['page']=='data-tamu' && isset($_COOKIE['jwt'])
 ?>
 <div class="mt-5 mb-4 rounded-3">
     <legend>Data Tamu <a href="?page=tambah-tamu" class="btn btn-primary btn-sm float-end"><i class="bi bi-plus me-1"></i> Tambah Tamu</a></legend>
+    <div class="rounded-3 overflow-hidden">
     <table class="table table-bordered table-striped table-hover">
         <thead class="table-dark">
             <tr>
@@ -322,6 +356,7 @@ if (isset($_GET['page']) && $_GET['page']=='data-tamu' && isset($_COOKIE['jwt'])
         <?php } ?>
         </tbody>
     </table>
+    </div>
 </div>
 <?php 
 } elseif (isset($_GET['page']) && ($_GET['page']=='tambah-tamu' || $_GET['page']=='ubah-tamu') && isset($_COOKIE['jwt'])) {
@@ -376,6 +411,7 @@ if (isset($_GET['page']) && $_GET['page']=='data-tamu' && isset($_COOKIE['jwt'])
 ?>
 <div class="mt-5 mb-4 rounded-3">
     <legend>Data Kamar <a href="?page=tambah-kamar" class="btn btn-primary btn-sm float-end"><i class="bi bi-plus me-1"></i> Tambah Kamar</a></legend>
+    <div class="rounded-3 overflow-hidden">
     <table class="table table-bordered table-striped table-hover">
         <thead class="table-dark">
             <tr>
@@ -406,6 +442,7 @@ if (isset($_GET['page']) && $_GET['page']=='data-tamu' && isset($_COOKIE['jwt'])
         <?php } ?>
         </tbody>
     </table>
+    </div>
 </div>
 <?php 
 } elseif (isset($_GET['page']) && ($_GET['page']=='tambah-kamar' || $_GET['page']=='ubah-kamar') && isset($_COOKIE['jwt'])) {
@@ -486,6 +523,7 @@ if (isset($_GET['page']) && $_GET['page']=='data-tamu' && isset($_COOKIE['jwt'])
 ?>
 <div class="mt-5 mb-4 rounded-3">
     <legend>Data Layanan <a href="?page=tambah-layanan" class="btn btn-primary btn-sm float-end"><i class="bi bi-plus me-1"></i> Tambah Layanan</a></legend>
+    <div class="rounded-3 overflow-hidden">
     <table class="table table-bordered table-striped table-hover">
         <thead class="table-dark">
             <tr>
@@ -515,6 +553,7 @@ if (isset($_GET['page']) && $_GET['page']=='data-tamu' && isset($_COOKIE['jwt'])
         <?php } ?>
         </tbody>
     </table>
+    </div>
 </div>
 <?php 
 } elseif (isset($_GET['page']) && ($_GET['page']=='tambah-layanan' || $_GET['page']=='ubah-layanan') && isset($_COOKIE['jwt'])) {
@@ -714,6 +753,7 @@ document.addEventListener('DOMContentLoaded', function(){
 <div class="mt-5 mb-4 rounded-3">
 <legend>Daftar Transaksi Tamu</legend>
 
+    <div class="rounded-3 overflow-hidden">
     <table class="table table-bordered table-striped table-hover ">
     <thead class="table-dark">
         <tr style="background-color: #f5f5f5;">
@@ -805,6 +845,7 @@ document.addEventListener('DOMContentLoaded', function(){
     ?>
     </tbody>
     </table>
+    </div>
 </div>
 <?php } else { ?>
 <!-- <legend>Selamat Datang</legend> -->
