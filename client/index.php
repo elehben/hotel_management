@@ -287,7 +287,25 @@ if (isset($_COOKIE['jwt'])) {
     // Set active sidebar item based on current page
     function setActiveSidebar() {
         const urlParams = new URLSearchParams(window.location.search);
-        const currentPage = urlParams.get('page');
+        let currentPage = urlParams.get('page');
+        
+        // Map sub-pages to their parent menu
+        const pageMapping = {
+            'tambah-tamu': 'data-tamu',
+            'ubah-tamu': 'data-tamu',
+            'tambah-kamar': 'data-kamar',
+            'ubah-kamar': 'data-kamar',
+            'tambah-layanan': 'data-layanan',
+            'ubah-layanan': 'data-layanan',
+            'ubah': 'data-transaksi',
+            'tambah': 'data-transaksi'
+        };
+        
+        // Use parent page if current page is a sub-page
+        if (currentPage && pageMapping[currentPage]) {
+            currentPage = pageMapping[currentPage];
+        }
+        
         const navLinks = document.querySelectorAll('.sidebar .nav-link');
         
         navLinks.forEach(function(link) {
@@ -296,6 +314,12 @@ if (isset($_COOKIE['jwt'])) {
             if (href && href.includes('page=')) {
                 const linkPage = new URLSearchParams(href.split('?')[1]).get('page');
                 if (linkPage === currentPage) {
+                    link.classList.add('active');
+                }
+            }
+            // Set Home as active if no page parameter or page=home
+            if (!currentPage || currentPage === 'home') {
+                if (href && href.includes('page=home')) {
                     link.classList.add('active');
                 }
             }

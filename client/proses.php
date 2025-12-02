@@ -96,8 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 	// --- 5. LOGOUT ---
     if ($_GET['aksi'] == 'logout') {
-        // ... (kode logout lama) ...
-		// Hapus semua cookie yang diset saat login
+        // Hapus semua cookie yang diset saat login
 		setcookie('jwt', '', time()-3600, "/"); 
 		setcookie('user_id', '', time()-3600, "/");
 		setcookie('username', '', time()-3600, "/");
@@ -106,8 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header('location:index.php?page=login'); 
     
 	// --- 4. PROSES HAPUS RESERVASI ---
-	} else if ($_GET['aksi'] == 'hapus')
-	{   
+	} else if ($_GET['aksi'] == 'hapus') {
 		$data = array(
 			"reservation_id" => $_GET['reservation_id'],
 			"jwt"            => $_GET['jwt'],
@@ -117,25 +115,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		$abc->hapus_data($data);
 		header('location:index.php?page=data-transaksi'); 
 
-	} elseif ($_SERVER['REQUEST_METHOD'] == 'GET') {
-
-    // --- LOGIC UBAH BAYAR (Baru) ---
-		if ($_GET['aksi'] == 'ubah_bayar') {
-			$data = array(
-				"jwt" => $_GET['jwt'],
-				"aksi" => "ubah_bayar",
-				"reservation_id" => $_GET['reservation_id'],
-				"status_baru" => $_GET['status_baru'] // 'Paid' atau 'Unpaid'
-			);
-			
-			// Kirim ke API
-			$abc->crud_general($data);
-			
-			// Kembali ke halaman transaksi
-			header('location:index.php?page=data-transaksi');
-		} 
+    // --- LOGIC UBAH BAYAR ---
+	} else if ($_GET['aksi'] == 'ubah_bayar') {
+		$data = array(
+			"jwt" => $_GET['jwt'],
+			"aksi" => "ubah_bayar",
+			"reservation_id" => $_GET['reservation_id'],
+			"status_baru" => $_GET['status_baru'] // 'Paid' atau 'Unpaid'
+		);
 		
-	}else {
+		// Kirim ke API
+		$abc->crud_general($data);
+		
+		// Kembali ke halaman transaksi
+		header('location:index.php?page=data-transaksi');
+		
+	} else {
         // Logic Hapus General
         $data = array(
             "jwt" => $_GET['jwt'],
