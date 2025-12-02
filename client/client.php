@@ -135,6 +135,7 @@ class Client
         curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($c, CURLOPT_POST, true);
         curl_setopt($c, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($c, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
         $response = curl_exec($c);
         curl_close($c);
         return json_decode($response);
