@@ -711,7 +711,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     <label class="form-label">ID Reservasi</label>
                     <div>
                         <input type="text" class="form-control" value="<?=$r->reservation_id?>" readonly disabled>
-                        <small class="text-muted">Tamu: <strong><?=$r->guest_id?></strong></small>
+                        <small class="text-muted">Tamu: <strong><?=$r->guest_id?></strong> -</small>
                     </div>
                 </div>
 
