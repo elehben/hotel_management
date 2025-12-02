@@ -29,9 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 			
 			// Redirect ke halaman data transaksi
 			header('location:index.php?page=home'); 
+			exit;
 		} else {
 			// Login gagal
 			header('location:index.php?page=login&pesan=gagal'); 
+			exit;
 		}   
 
 	// --- 2. PROSES TAMBAH RESERVASI ---
@@ -54,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		
 		$abc->tambah_data($data);
 		header('location:index.php?page=data-transaksi'); 
+		exit;
 
 	// --- 3. PROSES UBAH RESERVASI ---
 	} else if ($_POST['aksi'] == 'ubah')
@@ -76,6 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		
 		$abc->ubah_data($data);
 		header('location:index.php?page=data-transaksi'); 
+		exit;
 
     // Logic Umum untuk Tambah/Ubah Data (Tamu, Kamar, Layanan, Reservasi)
     } else {
@@ -85,10 +89,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $abc->crud_general($data);
 
         // Redirect sesuai aksi
-        if (strpos($_POST['aksi'], 'tamu') !== false) header('location:index.php?page=data-tamu');
-        elseif (strpos($_POST['aksi'], 'kamar') !== false) header('location:index.php?page=data-kamar');
-        elseif (strpos($_POST['aksi'], 'layanan') !== false) header('location:index.php?page=data-layanan');
-        else header('location:index.php?page=data-transaksi');
+        if (strpos($_POST['aksi'], 'tamu') !== false) {
+            header('location:index.php?page=data-tamu');
+            exit;
+        } elseif (strpos($_POST['aksi'], 'kamar') !== false) {
+            header('location:index.php?page=data-kamar');
+            exit;
+        } elseif (strpos($_POST['aksi'], 'layanan') !== false) {
+            header('location:index.php?page=data-layanan');
+            exit;
+        } else {
+            header('location:index.php?page=data-transaksi');
+            exit;
+        }
     }
 
 // Menangani request GET (Hapus & Logout)
@@ -103,6 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		setcookie('role', '', time()-3600, "/");
 
         header('location:index.php?page=login'); 
+        exit;
     
 	// --- 4. PROSES HAPUS RESERVASI ---
 	} else if ($_GET['aksi'] == 'hapus') {
@@ -114,6 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		
 		$abc->hapus_data($data);
 		header('location:index.php?page=data-transaksi'); 
+		exit;
 
     // --- LOGIC UBAH BAYAR ---
 	} else if ($_GET['aksi'] == 'ubah_bayar') {
@@ -129,6 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		
 		// Kembali ke halaman transaksi
 		header('location:index.php?page=data-transaksi');
+		exit;
 		
 	} else {
         // Logic Hapus General
@@ -146,10 +162,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $abc->crud_general($data); // Menggunakan helper crud_general yang kita buat di client.php (hapus juga pakai POST di curl backend, tapi trigger via GET di frontend)
         
         // Redirect
-        if (strpos($_GET['aksi'], 'tamu') !== false) header('location:index.php?page=data-tamu');
-        elseif (strpos($_GET['aksi'], 'kamar') !== false) header('location:index.php?page=data-kamar');
-        elseif (strpos($_GET['aksi'], 'layanan') !== false) header('location:index.php?page=data-layanan');
-        else header('location:index.php?page=data-transaksi');
+        if (strpos($_GET['aksi'], 'tamu') !== false) {
+            header('location:index.php?page=data-tamu');
+            exit;
+        } elseif (strpos($_GET['aksi'], 'kamar') !== false) {
+            header('location:index.php?page=data-kamar');
+            exit;
+        } elseif (strpos($_GET['aksi'], 'layanan') !== false) {
+            header('location:index.php?page=data-layanan');
+            exit;
+        } else {
+            header('location:index.php?page=data-transaksi');
+            exit;
+        }
     }
 }
 
